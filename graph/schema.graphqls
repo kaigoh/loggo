@@ -2,27 +2,41 @@
 #
 # https://gqlgen.com/getting-started/
 
-type Todo {
+scalar Time
+
+type Channel {
   id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
+  uuid: String!
+  name: String!
+  ttl: String
+  mqtt: Boolean!
+  mqttTopic: String
+  ntfy: Boolean!
+  ntfyTopic: String
 }
 
-type User {
+type Event {
   id: ID!
-  name: String!
+  source: String!
+  level: EventLevel!
+  timestamp: Time!
+  title: String
+  message: String!
+  data: String
+}
+
+enum EventLevel {
+  debug
+  info
+  warning
+  error
+  fatal
 }
 
 type Query {
-  todos: [Todo!]!
-}
-
-input NewTodo {
-  text: String!
-  userId: String!
-}
-
-type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  getChannels: [Channel!]!
+  getChannel(id: ID!): Channel!
+  getEvent(id: ID!): Event!
+  getChannelEvents(channelId: ID!, page: Int = 0, pageSize: Int = 100): [Event!]!
+  getSourceEvents(channelId: ID!, source: String!, page: Int = 0, pageSize: Int = 100): [Event!]!
 }

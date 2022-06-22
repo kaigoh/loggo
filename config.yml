@@ -1,0 +1,7 @@
+timezone: Europe/London
+database:
+  type: mysql
+  dsn: kaigoh:St@rfleet17011986@tcp(10.0.0.3:3306)/loggo?parseTime=True&loc=Local&interpolateParams=true
+ntfy:
+  enabled: true
+  endpoint: https://gohegan.fyi

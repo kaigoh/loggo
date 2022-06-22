@@ -1,0 +1,4 @@
+data/
+loggo
+*.exe
+config.yaml

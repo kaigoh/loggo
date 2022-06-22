@@ -2,19 +2,78 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+import (
+	"fmt"
+	"io"
+	"strconv"
+	"time"
+)
+
+type Channel struct {
+	ID        uint    `json:"id"`
+	UUID      string  `json:"uuid"`
+	Name      string  `json:"name"`
+	TTL       *string `json:"ttl"`
+	Mqtt      bool    `json:"mqtt"`
+	MqttTopic *string `json:"mqttTopic"`
+	Ntfy      bool    `json:"ntfy"`
+	NtfyTopic *string `json:"ntfyTopic"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type Event struct {
+	ID           uint       `json:"id"`
+	Source       string     `json:"source"`
+	Level        EventLevel `json:"level"`
+	Timestamp    time.Time  `json:"timestamp"`
+	Title        *string    `json:"title"`
+	Message      string     `json:"message"`
+	DataMIMEType *string    `json:"dataMIMEType"`
+	Data         *string    `json:"data"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type EventLevel string
+
+const (
+	EventLevelDebug   EventLevel = "debug"
+	EventLevelInfo    EventLevel = "info"
+	EventLevelWarning EventLevel = "warning"
+	EventLevelError   EventLevel = "error"
+	EventLevelFatal   EventLevel = "fatal"
+)
+
+var AllEventLevel = []EventLevel{
+	EventLevelDebug,
+	EventLevelInfo,
+	EventLevelWarning,
+	EventLevelError,
+	EventLevelFatal,
+}
+
+func (e EventLevel) IsValid() bool {
+	switch e {
+	case EventLevelDebug, EventLevelInfo, EventLevelWarning, EventLevelError, EventLevelFatal:
+		return true
+	}
+	return false
+}
+
+func (e EventLevel) String() string {
+	return string(e)
+}
+
+func (e *EventLevel) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = EventLevel(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid EventLevel", str)
+	}
+	return nil
+}
+
+func (e EventLevel) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
