@@ -18,6 +18,7 @@ require (
 )
 
 require (
+	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 )

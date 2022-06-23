@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/url"
@@ -12,16 +13,31 @@ import (
 )
 
 type Event struct {
-	ID        uint `gorm:"primaryKey" json:"id"`
-	ChannelID uint `gorm:"index:idx_loggo_event_channel; index:idx_loggo_event,0; not null;" json:"channel_id"`
-	Channel   Channel
+	ID        uint       `gorm:"primaryKey" json:"id"`
+	ChannelID uint       `gorm:"index:idx_loggo_event_channel; index:idx_loggo_event,0; not null;" json:"channel_id"`
+	Channel   Channel    `json:"-"`
 	CreatedAt time.Time  `json:"created_at"`
 	Source    string     `gorm:"index:idx_loggo_event,1; not null; size:128;" json:"source"`
 	Level     EventLevel `gorm:"index:idx_loggo_event,2; not null;" json:"level"`
 	Timestamp time.Time  `gorm:"index:idx_loggo_event,3,sort:desc; not null;" json:"timestamp"`
 	Title     *string    `gorm:"size:128;" json:"title"`
 	Message   string     `gorm:"size:512; not null;" json:"message"`
+	HasData   bool       `gorm:"not null" json:"has_data"`
 	EventData EventData  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+}
+
+func (e *Event) BeforeCreate(tx *gorm.DB) (err error) {
+	if e.EventData.Data != nil {
+		e.HasData = true
+	}
+	return
+}
+
+func (e *Event) BeforeSave(tx *gorm.DB) (err error) {
+	if e.EventData.Data != nil {
+		e.HasData = true
+	}
+	return
 }
 
 func (e *Event) GetDataURL(config *configuration.Config, tx *gorm.DB) (uri *string, err error) {
@@ -37,6 +53,10 @@ func (e *Event) GetDataURL(config *configuration.Config, tx *gorm.DB) (uri *stri
 	u.Path = fmt.Sprintf("/channel/%s/event/%d/data/", name, e.ID)
 	compiled := u.String()
 	return &compiled, nil
+}
+
+func (e *Event) ToJSON() ([]byte, error) {
+	return json.Marshal(e)
 }
 
 type EventData struct {

@@ -123,7 +123,7 @@ func connectSQLite() *gorm.DB {
 
 // Migrate all models
 func Migrate(db *gorm.DB) {
-	if err := db.AutoMigrate(&models.Channel{}, &models.Event{}); err != nil {
+	if err := db.AutoMigrate(&models.Channel{}, &models.Event{}, &models.EventData{}); err != nil {
 		panic(err.Error())
 	}
 }
